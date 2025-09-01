@@ -5,12 +5,54 @@ window.console.log("DOM access test - <body> element:", document.body);
 // Immediate debug log to confirm script injection
 window.console.log("Content script is running on:", window.location.href);
 
+// Test for CSP restrictions
+try {
+  const testDiv = document.createElement('div');
+  testDiv.textContent = 'CSP Test';
+  document.body.appendChild(testDiv);
+  window.console.log("CSP Test: Successfully appended a test div to the DOM.");
+  testDiv.remove();
+} catch (error) {
+  window.console.error("CSP Test: Failed to append test div. Possible CSP restriction:", error.message);
+}
+
 // Listen for messages from the React app to save values
 window.addEventListener('message', (event) => {
+  // Debug log for ALL messages
+  window.console.log('📨 Message received from page:', event.data);
+  window.console.log('Message origin:', event.origin);
+  
   if (event.data.type === 'SAVE_FIELDS') {
-    chrome.storage.local.set({ savedFields: event.data.data }, () => {
-      window.console.log('Fields saved to chrome.storage.local under savedFields:', event.data.data);
-    });
+    window.console.log('✅ SAVE_FIELDS message detected!');
+    window.console.log('📦 Data to save:', event.data.data);
+    
+    try {
+      // Check if chrome.storage is available
+      if (chrome && chrome.storage && chrome.storage.local) {
+        window.console.log('🔧 chrome.storage.local is available, attempting to save...');
+        
+        chrome.storage.local.set({ savedFields: event.data.data }, () => {
+          if (chrome.runtime.lastError) {
+            window.console.error('❌ Error saving fields to chrome.storage:', chrome.runtime.lastError);
+          } else {
+            window.console.log('✅ Fields successfully saved to chrome.storage.local!');
+            window.console.log('💾 Saved data:', event.data.data);
+            
+            // Verify the save by reading it back
+            chrome.storage.local.get('savedFields', (result) => {
+              window.console.log('🔍 Verification - Data in storage:', result.savedFields);
+            });
+          }
+        });
+      } else {
+        window.console.error('❌ chrome.storage.local is not available');
+        window.console.log('Chrome object:', typeof chrome);
+        window.console.log('Chrome.storage object:', chrome?.storage);
+      }
+    } catch (error) {
+      window.console.error('❌ Error in SAVE_FIELDS handler:', error);
+      window.console.log('Error stack:', error.stack);
+    }
   }
 });
 
@@ -19,9 +61,26 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   try {
     window.console.log("Message received in content.js:", request);
     if (request.action === "copyFields") {
-      window.console.log("Copy Fields action triggered at:", new Date().toISOString());
-      window.console.log("Current page URL:", window.location.href);
-      window.console.log("Current document title:", document.title);
+      window.console.log("🔵 Copy Fields action triggered at:", new Date().toISOString());
+      window.console.log("📍 Current page URL:", window.location.href);
+      window.console.log("📄 Current document title:", document.title);
+      
+      // Check if we're on morgotools.com
+      const isMorgoTools = window.location.href.includes('morgotools.com');
+      window.console.log("🌐 Is MorgoTools page?", isMorgoTools);
+      
+      if (isMorgoTools) {
+        window.console.log("🔍 Checking for already saved fields from morgotools.com...");
+        chrome.storage.local.get("savedFields", (data) => {
+          window.console.log("📦 Data currently in storage:", data.savedFields);
+          if (data.savedFields) {
+            sendResponse({ success: true, values: data.savedFields });
+          } else {
+            sendResponse({ success: false, error: "No saved fields found. Click save on the page first." });
+          }
+        });
+        return true;
+      }
 
       const packageIdInput = document.getElementById('packageId');
       const mNumberInput = document.getElementById('mNumber');
@@ -107,10 +166,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
       const isSimulationForm = window.location.href.includes('dut-simulation') || window.location.href.includes('dutsimulation');
       const isDutchie = window.location.href.includes('dutchie.com');
+      const isDutchieInventory = window.location.href === 'https://pine.backoffice.dutchie.com/products/inventory';
       const isTestHtml = window.location.href.toLowerCase().includes('test.html');
+      const isNetlifyDutchie = window.location.href.includes('morganhondros-interviewtopics.netlify.app/dutchie-new');
       window.console.log("Checking page type - isTestHtml:", isTestHtml, "URL:", window.location.href.toLowerCase());
       window.console.log("Checking page type - isSimulationForm:", isSimulationForm, "URL:", window.location.href);
       window.console.log("Checking page type - isDutchie:", isDutchie, "URL:", window.location.href);
+      window.console.log("Checking page type - isDutchieInventory:", isDutchieInventory, "URL:", window.location.href);
+      window.console.log("Checking page type - isNetlifyDutchie:", isNetlifyDutchie, "URL:", window.location.href);
 
       if (isTestHtml) {
         window.console.log("Detected test.html page. Attempting to paste into daysSupply input...");
@@ -137,6 +200,36 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           sendResponse({ 
             success: false, 
             error: "Days supply input not found in test.html."
+          });
+        }
+        return true;
+      } else if (isNetlifyDutchie) {
+        window.console.log("Detected Netlify Dutchie page. Attempting to paste fields...");
+        
+        // Get the input element with ID containing spaces
+        const driverInput = document.getElementById('input-input_Delivered by');
+        window.console.log("Driver input element with space in ID:", driverInput);
+        
+        if (driverInput) {
+          chrome.storage.local.get("savedFields", (data) => {
+            window.console.log("Retrieved saved fields for pasting in Netlify Dutchie:", data.savedFields);
+            if (data.savedFields && data.savedFields.drivers) {
+              // Paste the drivers value
+              driverInput.value = data.savedFields.drivers || '';
+              driverInput.dispatchEvent(new Event('input', { bubbles: true }));
+              driverInput.dispatchEvent(new Event('change', { bubbles: true }));
+              window.console.log("Successfully pasted drivers value in Netlify Dutchie:", data.savedFields.drivers);
+              sendResponse({ success: true });
+            } else {
+              window.console.log("No saved fields or drivers field found in storage.");
+              sendResponse({ success: false, error: "No drivers field found. Please copy the fields first." });
+            }
+          });
+        } else {
+          window.console.log("Driver input not found on Netlify Dutchie page.");
+          sendResponse({ 
+            success: false, 
+            error: "Driver input field not found on the page."
           });
         }
         return true;
@@ -280,31 +373,131 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         return true;
       } else if (isDutchie) {
         window.console.log("Detected Dutchie page. Using stable selectors to paste fields...");
-        const observer = new MutationObserver((mutations, obs) => {
-          const daysSupplyInput = document.querySelector('input[name="daysSupply"]');
-          const thcInput = document.querySelector('input[name="thc"]');
-          const cbdInput = document.querySelector('input[name="cbd"]');
-          if (daysSupplyInput && thcInput && cbdInput) {
-            window.console.log("Found Dutchie input elements:", { daysSupplyInput, thcInput, cbdInput });
-            chrome.storage.local.get("savedFields", (data) => {
-              window.console.log("Retrieved saved fields for pasting in Dutchie:", data.savedFields);
-              if (data.savedFields) {
-                const pasteValue = (input, value) => {
+        
+        // First, try to find the input immediately
+        const nameInput = document.querySelector('div.MuiInputBase-root.MuiOutlinedInput-root.MuiInputBase-adornedStart input[type="search"]');
+        window.console.log("Immediate check for search input on Dutchie page:", nameInput);
+        window.console.log("Input attributes if found:", nameInput ? { type: nameInput.type, id: nameInput.id, disabled: nameInput.disabled, readOnly: nameInput.readOnly } : "Input not found");
+
+        if (isDutchieInventory && nameInput) {
+          window.console.log("Input found immediately on Dutchie inventory page:", nameInput);
+          chrome.storage.local.get("savedFields", (data) => {
+            window.console.log("Retrieved saved fields for pasting in Dutchie inventory:", data.savedFields);
+            if (data.savedFields && data.savedFields.productName) {
+              window.console.log("productName to be pasted:", data.savedFields.productName);
+              const pasteValue = (input, value) => {
+                try {
+                  // First attempt: Standard value setting
                   input.value = value || '';
                   input.dispatchEvent(new Event('input', { bubbles: true }));
                   input.dispatchEvent(new Event('change', { bubbles: true }));
-                };
-                pasteValue(daysSupplyInput, data.savedFields.daysSupply);
-                pasteValue(thcInput, data.savedFields.thc);
-                pasteValue(cbdInput, data.savedFields.cbd);
-                window.console.log("Successfully pasted fields in Dutchie:", data.savedFields);
-                sendResponse({ success: true });
-              } else {
-                window.console.log("No saved fields found in storage.");
-                sendResponse({ success: false, error: "No saved fields found. Please copy the fields first." });
-              }
-            });
-            obs.disconnect();
+                  window.console.log("After standard paste attempt, input value is:", input.value);
+
+                  // Check if the value was reset (possible blocking)
+                  setTimeout(() => {
+                    if (input.value !== value) {
+                      window.console.log("Value was reset after standard paste. Possible blocking by Dutchie. Trying fallback method...");
+                      // Fallback: Use Object.defineProperty to bypass potential blockers
+                      Object.defineProperty(input, 'value', {
+                        value: value || '',
+                        writable: true
+                      });
+                      input.dispatchEvent(new Event('input', { bubbles: true }));
+                      input.dispatchEvent(new Event('change', { bubbles: true }));
+                      window.console.log("After fallback paste attempt, input value is:", input.value);
+                    }
+                  }, 500);
+                } catch (error) {
+                  window.console.error("Error during paste operation:", error.message);
+                  sendResponse({ success: false, error: "Paste operation failed: " + error.message });
+                }
+              };
+              pasteValue(nameInput, data.savedFields.productName);
+              window.console.log("Successfully pasted productName in Dutchie inventory:", data.savedFields.productName);
+              sendResponse({ success: true });
+            } else {
+              window.console.log("No saved fields or productName found in storage:", data.savedFields);
+              sendResponse({ success: false, error: "No saved fields or productName found. Please copy the fields first." });
+            }
+          });
+          return true;
+        }
+
+        // If the input wasn't found immediately, use MutationObserver
+        const observer = new MutationObserver((mutations, obs) => {
+          window.console.log("MutationObserver triggered, checking for inputs...");
+          if (isDutchieInventory) {
+            const nameInput = document.querySelector('div.MuiInputBase-root.MuiOutlinedInput-root.MuiInputBase-adornedStart input[type="search"]');
+            window.console.log("Search input element found on Dutchie inventory page (via observer):", nameInput);
+            window.console.log("Input attributes if found (via observer):", nameInput ? { type: nameInput.type, id: nameInput.id, disabled: nameInput.disabled, readOnly: nameInput.readOnly } : "Input not found");
+            if (nameInput) {
+              chrome.storage.local.get("savedFields", (data) => {
+                window.console.log("Retrieved saved fields for pasting in Dutchie inventory:", data.savedFields);
+                if (data.savedFields && data.savedFields.productName) {
+                  window.console.log("productName to be pasted:", data.savedFields.productName);
+                  const pasteValue = (input, value) => {
+                    try {
+                      // First attempt: Standard value setting
+                      input.value = value || '';
+                      input.dispatchEvent(new Event('input', { bubbles: true }));
+                      input.dispatchEvent(new Event('change', { bubbles: true }));
+                      window.console.log("After standard paste attempt (via observer), input value is:", input.value);
+
+                      // Check if the value was reset (possible blocking)
+                      setTimeout(() => {
+                        if (input.value !== value) {
+                          window.console.log("Value was reset after standard paste (via observer). Possible blocking by Dutchie. Trying fallback method...");
+                          // Fallback: Use Object.defineProperty to bypass potential blockers
+                          Object.defineProperty(input, 'value', {
+                            value: value || '',
+                            writable: true
+                          });
+                          input.dispatchEvent(new Event('input', { bubbles: true }));
+                          input.dispatchEvent(new Event('change', { bubbles: true }));
+                          window.console.log("After fallback paste attempt (via observer), input value is:", input.value);
+                        }
+                      }, 500);
+                    } catch (error) {
+                      window.console.error("Error during paste operation (via observer):", error.message);
+                      sendResponse({ success: false, error: "Paste operation failed: " + error.message });
+                    }
+                  };
+                  pasteValue(nameInput, data.savedFields.productName);
+                  window.console.log("Successfully pasted productName in Dutchie inventory (via observer):", data.savedFields.productName);
+                  sendResponse({ success: true });
+                } else {
+                  window.console.log("No saved fields or productName found in storage:", data.savedFields);
+                  sendResponse({ success: false, error: "No saved fields or productName found. Please copy the fields first." });
+                }
+              });
+              obs.disconnect();
+            }
+          } else {
+            const daysSupplyInput = document.querySelector('input[name="daysSupply"]');
+            const thcInput = document.querySelector('input[name="thc"]');
+            const cbdInput = document.querySelector('input[name="cbd"]');
+            window.console.log("Found Dutchie input elements:", { daysSupplyInput, thcInput, cbdInput });
+            if (daysSupplyInput && thcInput && cbdInput) {
+              chrome.storage.local.get("savedFields", (data) => {
+                window.console.log("Retrieved saved fields for pasting in Dutchie:", data.savedFields);
+                if (data.savedFields) {
+                  const pasteValue = (input, value) => {
+                    input.value = value || '';
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                    input.dispatchEvent(new Event('change', { bubbles: true }));
+                  };
+                  pasteValue(daysSupplyInput, data.savedFields.daysSupply);
+                  pasteValue(thcInput, data.savedFields.thc);
+                  pasteValue(cbdInput, data.savedFields.cbd);
+                  window.console.log("Successfully pasted fields in Dutchie:", data.savedFields);
+                  sendResponse({ success: true });
+                } else {
+                  window.console.log("No saved fields found in storage.");
+                  sendResponse({ success: false, error: "No saved fields found. Please copy the fields first." });
+                }
+              });
+              obs.disconnect();
+            }
           }
         });
 
@@ -313,14 +506,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         setTimeout(() => {
           observer.disconnect();
           const daysSupplyInput = document.querySelector('input[name="daysSupply"]');
-          if (!daysSupplyInput) {
-            window.console.log("Failed to find days supply input in Dutchie after 10 seconds.");
+          const nameInput = document.querySelector('div.MuiInputBase-root.MuiOutlinedInput-root.MuiInputBase-adornedStart input[type="search"]');
+          if (!daysSupplyInput && !nameInput) {
+            window.console.log("Failed to find required inputs in Dutchie after 15 seconds. Final check for search input:", nameInput);
             sendResponse({ 
               success: false, 
-              error: "Days supply input not found on Dutchie page."
+              error: "Required inputs not found on Dutchie page after 15 seconds."
             });
           }
-        }, 10000);
+        }, 15000);
         return true;
       } else {
         window.console.log("Page not recognized for pasting:", window.location.href);
