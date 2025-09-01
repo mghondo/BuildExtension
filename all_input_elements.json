@@ -1,0 +1,572 @@
+{
+  "description": "All input element IDs from DutchieNew components",
+  "components": {
+    "MainPageForm": {
+      "file": "components/MainPageForm/MainPageForm.js",
+      "inputs": [
+        {
+          "id": "upload-button-container",
+          "title": "File Upload",
+          "type": "file"
+        },
+        {
+          "id": "input-input_Delivered by",
+          "title": "Delivered by",
+          "required": true
+        },
+        {
+          "id": "input-input_Vendor license #",
+          "title": "Vendor license #"
+        },
+        {
+          "id": "input-input_Order title",
+          "title": "Order title"
+        },
+        {
+          "id": "input-input_Transaction ID",
+          "title": "Transaction ID"
+        },
+        {
+          "id": "input-input_Room",
+          "title": "Room",
+          "required": true
+        },
+        {
+          "id": "input-input_Subroom",
+          "title": "Subroom"
+        },
+        {
+          "id": "input-input_Inventory status",
+          "title": "Inventory status"
+        },
+        {
+          "id": "input-input_Total credits",
+          "title": "Total credits",
+          "type": "number"
+        },
+        {
+          "id": "input-input_Shipping charges",
+          "title": "Shipping charges",
+          "type": "number"
+        },
+        {
+          "id": "input-input_Notes",
+          "title": "Notes",
+          "type": "textarea"
+        }
+      ]
+    },
+    "VendorInput": {
+      "file": "components/MainPageForm/VendorInput.js",
+      "inputs": [
+        {
+          "id": "input-input_Vendor",
+          "title": "Vendor",
+          "required": true
+        }
+      ]
+    },
+    "DeliveredOn": {
+      "file": "components/MainPageForm/DeliveredOn.js",
+      "inputs": [
+        {
+          "id": "input-input_Delivered on",
+          "title": "Delivered on",
+          "type": "date/time"
+        }
+      ]
+    },
+    "ApplyCostOptions": {
+      "file": "components/MainPageForm/ApplyCostOptions.js",
+      "inputs": [
+        {
+          "id": "input-input_Apply cost options",
+          "title": "Apply cost options"
+        }
+      ]
+    },
+    "Navbar": {
+      "file": "components/Navbar/Navbar.js",
+      "inputs": [
+        {
+          "id": "global-search-input",
+          "title": "Search...",
+          "type": "search",
+          "note": "Search input in navigation bar"
+        }
+      ]
+    },
+    "ProductModal": {
+      "file": "components/ProductModal/ProductModal.js",
+      "inputs": [
+        {
+          "id": "input-input_Listed product",
+          "title": "Listed product",
+          "readonly": true
+        },
+        {
+          "id": "input-input_Catalog product",
+          "title": "Catalog product",
+          "required": true
+        },
+        {
+          "id": "input-input_Tags",
+          "title": "Tags"
+        },
+        {
+          "id": "input-input_Type",
+          "title": "Type",
+          "readonly": true
+        },
+        {
+          "id": "input-input_Quantity",
+          "title": "Quantity",
+          "type": "number",
+          "required": true
+        },
+        {
+          "id": "input-input_Vendor",
+          "title": "Vendor",
+          "required": true
+        },
+        {
+          "id": "input-input_Room",
+          "title": "Room",
+          "required": true
+        },
+        {
+          "id": "input-input_Building",
+          "title": "Building"
+        },
+        {
+          "id": "input-input_Grams/concentration",
+          "title": "Grams/concentration",
+          "type": "number"
+        },
+        {
+          "id": "input-input_Subroom",
+          "title": "Subroom"
+        },
+        {
+          "id": "input-input_Flower equivalent",
+          "title": "Flower equivalent"
+        },
+        {
+          "id": "input-input_Expiration date",
+          "title": "Expiration date",
+          "type": "date"
+        },
+        {
+          "id": "input-input_Packaging date",
+          "title": "Packaging date",
+          "type": "date"
+        },
+        {
+          "id": "input-input_Package ID",
+          "title": "Package ID",
+          "required": true
+        },
+        {
+          "id": "input-input_External package ID",
+          "title": "External package ID"
+        },
+        {
+          "id": "input-input_Lot name/batch ID",
+          "title": "Lot name/batch ID"
+        },
+        {
+          "id": "input-input_Package NDC",
+          "title": "Package NDC"
+        },
+        {
+          "id": "input-input_Strain",
+          "title": "Strain"
+        },
+        {
+          "id": "input-input_Tax per unit",
+          "title": "Tax per unit",
+          "type": "number"
+        },
+        {
+          "id": "input-input_Cost per unit",
+          "title": "Cost per unit",
+          "type": "number",
+          "required": true
+        },
+        {
+          "id": "input-input_Price per unit",
+          "title": "Price per unit",
+          "type": "number"
+        },
+        {
+          "id": "input-input_Total package cost",
+          "title": "Total package cost",
+          "type": "number"
+        }
+      ]
+    },
+    "ProductSpecific": {
+      "file": "components/ProductSpecific/ProductSpecific.js",
+      "inputs": [
+        {
+          "id": "input-input_Name:",
+          "title": "Name",
+          "required": true
+        },
+        {
+          "id": "input-input_SKU:",
+          "title": "SKU",
+          "required": true
+        },
+        {
+          "id": "input-input_NDC:",
+          "title": "NDC"
+        },
+        {
+          "id": "input-input_Master category:",
+          "title": "Master category"
+        },
+        {
+          "id": "input-input_catalog-tags",
+          "title": "Tags",
+          "note": "Multiple instances for Category and Tags selection"
+        },
+        {
+          "id": "input-input_Grams / concentration:",
+          "title": "Grams / concentration",
+          "type": "number",
+          "required": true
+        },
+        {
+          "id": "input-input_Net weight:",
+          "title": "Net weight",
+          "type": "number"
+        },
+        {
+          "id": "input-input_Gross weight:",
+          "title": "Gross weight",
+          "type": "number"
+        },
+        {
+          "id": "input-input_THC content:",
+          "title": "THC content",
+          "type": "number",
+          "required": true
+        },
+        {
+          "id": "input-input_CBD content:",
+          "title": "CBD content",
+          "type": "number",
+          "required": true
+        },
+        {
+          "id": "input-input_Base price:",
+          "title": "Base price",
+          "type": "number"
+        },
+        {
+          "id": "input-input_Med taxed price:",
+          "title": "Med taxed price",
+          "type": "number"
+        },
+        {
+          "id": "input-input_Rec taxed price:",
+          "title": "Rec taxed price",
+          "type": "number"
+        },
+        {
+          "id": "input-input_Cost:",
+          "title": "Cost",
+          "type": "number"
+        },
+        {
+          "id": "input-input_catalog-tax-categories",
+          "title": "Tax categories"
+        },
+        {
+          "id": "input-input_Serving size:",
+          "title": "Serving size",
+          "type": "number"
+        },
+        {
+          "id": "input-input_Servings per unit:",
+          "title": "Servings per unit",
+          "type": "number"
+        },
+        {
+          "id": "input-input_Strain:",
+          "title": "Strain",
+          "required": true
+        },
+        {
+          "id": "input-input_Vendor:",
+          "title": "Vendor",
+          "required": true
+        },
+        {
+          "id": "input-input_Brand:",
+          "title": "Brand",
+          "required": true
+        },
+        {
+          "id": "input-input_Flavor:",
+          "title": "Flavor"
+        },
+        {
+          "id": "input-input_Low inventory threshold:",
+          "title": "Low inventory threshold",
+          "type": "number"
+        },
+        {
+          "id": "input-input_Available for:",
+          "title": "Available for",
+          "required": true
+        },
+        {
+          "id": "input-input_Max quantity per transaction:",
+          "title": "Max quantity per transaction",
+          "type": "number"
+        },
+        {
+          "id": "input-input_External ID:",
+          "title": "External ID"
+        },
+        {
+          "id": "input-input_Days supply:",
+          "title": "Days supply",
+          "type": "number"
+        },
+        {
+          "id": "input-input_Expiration days:",
+          "title": "Expiration days",
+          "type": "number"
+        }
+      ]
+    },
+    "ExistingJSONFiles": {
+      "Product_input_elements": {
+        "file": "Product_input_elements.json",
+        "note": "Previously extracted from Product.index.html",
+        "inputs": [
+          {
+            "id": "global-search-input",
+            "title": "Search..."
+          },
+          {
+            "id": "input-input_Name:",
+            "title": "Name"
+          },
+          {
+            "id": "input-input_SKU:",
+            "title": "SKU"
+          },
+          {
+            "id": "input-input_NDC:",
+            "title": "NDC"
+          },
+          {
+            "id": "input-input_Master category:",
+            "title": "Master category"
+          },
+          {
+            "id": "input-input_catalog-tags",
+            "title": "Select tags"
+          },
+          {
+            "id": "input-input_Grams / concentration:",
+            "title": "Grams / concentration"
+          },
+          {
+            "id": "input-input_Net weight:",
+            "title": "Net weight"
+          },
+          {
+            "id": "input-input_Gross weight:",
+            "title": "Gross weight"
+          },
+          {
+            "id": "input-input_THC content:",
+            "title": "THC content"
+          },
+          {
+            "id": "input-input_CBD content:",
+            "title": "CBD content"
+          },
+          {
+            "id": "input-input_Base price:",
+            "title": "Base price"
+          },
+          {
+            "id": "input-input_Med taxed price:",
+            "title": "Med taxed price"
+          },
+          {
+            "id": "input-input_Rec taxed price:",
+            "title": "Rec taxed price"
+          },
+          {
+            "id": "input-input_Cost:",
+            "title": "Cost"
+          },
+          {
+            "id": "input-input_catalog-tax-categories",
+            "title": "Select tax categories"
+          },
+          {
+            "id": "input-input_Serving size:",
+            "title": "Serving size"
+          },
+          {
+            "id": "input-input_Servings per unit:",
+            "title": "Servings per unit"
+          },
+          {
+            "id": "input-input_Strain:",
+            "title": "Select a strain"
+          },
+          {
+            "id": "input-input_Vendor:",
+            "title": "Select a vendor"
+          },
+          {
+            "id": "input-input_Brand:",
+            "title": "Select a brand"
+          },
+          {
+            "id": "input-input_Flavor:",
+            "title": "Flavor"
+          },
+          {
+            "id": "input-input_Low inventory threshold:",
+            "title": "Low inventory threshold"
+          },
+          {
+            "id": "input-input_Available for:",
+            "title": "Available for"
+          },
+          {
+            "id": "input-input_Max quantity per transaction:",
+            "title": "Max quantity per transaction"
+          },
+          {
+            "id": "input-input_External ID:",
+            "title": "External ID"
+          },
+          {
+            "id": "input-input_Days supply:",
+            "title": "Days supply"
+          },
+          {
+            "id": "input-input_Expiration days:",
+            "title": "Expiration days"
+          }
+        ]
+      },
+      "modal_input_elements": {
+        "file": "modal_input_elements.json",
+        "note": "Previously extracted from modalPage.html",
+        "inputs": [
+          {
+            "id": "input-input_Listed product",
+            "title": "Listed product"
+          },
+          {
+            "id": "input-input_Catalog product",
+            "title": "Catalog product"
+          },
+          {
+            "id": "input-input_Tags",
+            "title": "Tags"
+          },
+          {
+            "id": "input-input_Type",
+            "title": "Type"
+          },
+          {
+            "id": "input-input_Quantity",
+            "title": "Quantity"
+          },
+          {
+            "id": "input-input_Vendor",
+            "title": "Vendor"
+          },
+          {
+            "id": "input-input_Grams/concentration",
+            "title": "Grams/concentration"
+          },
+          {
+            "id": "input-input_Room",
+            "title": "Room"
+          },
+          {
+            "id": "input-input_Building",
+            "title": "Building"
+          },
+          {
+            "id": "input-input_Subroom",
+            "title": "Subroom"
+          },
+          {
+            "id": "input-input_Flower equivalent",
+            "title": "Flower equivalent"
+          },
+          {
+            "id": "input-input_Expiration date",
+            "title": "Expiration date"
+          },
+          {
+            "id": "input-input_Package ID",
+            "title": "Package ID"
+          },
+          {
+            "id": "input-input_Packaging date",
+            "title": "Packaging date"
+          },
+          {
+            "id": "input-input_External package ID",
+            "title": "External package ID"
+          },
+          {
+            "id": "input-input_Lot name/batch ID",
+            "title": "Lot name/batch ID"
+          },
+          {
+            "id": "input-input_Package NDC",
+            "title": "Package NDC"
+          },
+          {
+            "id": "input-input_Strain",
+            "title": "Strain"
+          },
+          {
+            "id": "input-input_Tax per unit",
+            "title": "Tax per unit"
+          },
+          {
+            "id": "input-input_Cost per unit",
+            "title": "Cost per unit"
+          },
+          {
+            "id": "input-input_Price per unit",
+            "title": "Price per unit"
+          },
+          {
+            "id": "input-input_Total package cost",
+            "title": "Total package cost"
+          }
+        ]
+      }
+    }
+  },
+  "summary": {
+    "total_unique_inputs": 72,
+    "components_analyzed": 9,
+    "common_patterns": [
+      "Most IDs follow pattern: input-input_[Field Name]",
+      "Required fields are marked with 'required' attribute",
+      "Number inputs use type='number'",
+      "Select dropdowns and custom dropdown components are mixed",
+      "Some fields have readonly attributes"
+    ]
+  }
+}

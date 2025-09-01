@@ -168,7 +168,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       const isDutchie = window.location.href.includes('dutchie.com');
       const isDutchieInventory = window.location.href === 'https://pine.backoffice.dutchie.com/products/inventory';
       const isTestHtml = window.location.href.toLowerCase().includes('test.html');
-      const isNetlifyDutchie = window.location.href.includes('morganhondros-interviewtopics.netlify.app/dutchie-new');
+      const isNetlifyDutchie = window.location.href.includes('morganhondros-interviewtopics.netlify.app/dutchie-new') || 
+                              window.location.href.includes('localhost:3001/dutchie-new');
       window.console.log("Checking page type - isTestHtml:", isTestHtml, "URL:", window.location.href.toLowerCase());
       window.console.log("Checking page type - isSimulationForm:", isSimulationForm, "URL:", window.location.href);
       window.console.log("Checking page type - isDutchie:", isDutchie, "URL:", window.location.href);
@@ -204,34 +205,56 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
         return true;
       } else if (isNetlifyDutchie) {
-        window.console.log("Detected Netlify Dutchie page. Attempting to paste fields...");
+        window.console.log("🎯 Detected Netlify Dutchie page. Attempting to paste multiple fields...");
         
-        // Get the input element with ID containing spaces
-        const driverInput = document.getElementById('input-input_Delivered by');
-        window.console.log("Driver input element with space in ID:", driverInput);
+        // Get ALL the input elements we need
+        const deliveredByInput = document.getElementById('input-input_Delivered by');
+        const vendorInput = document.getElementById('input-input_Vendor') || document.getElementById('input-Vendor');
         
-        if (driverInput) {
-          chrome.storage.local.get("savedFields", (data) => {
-            window.console.log("Retrieved saved fields for pasting in Netlify Dutchie:", data.savedFields);
-            if (data.savedFields && data.savedFields.drivers) {
-              // Paste the drivers value
-              driverInput.value = data.savedFields.drivers || '';
-              driverInput.dispatchEvent(new Event('input', { bubbles: true }));
-              driverInput.dispatchEvent(new Event('change', { bubbles: true }));
-              window.console.log("Successfully pasted drivers value in Netlify Dutchie:", data.savedFields.drivers);
-              sendResponse({ success: true });
-            } else {
-              window.console.log("No saved fields or drivers field found in storage.");
-              sendResponse({ success: false, error: "No drivers field found. Please copy the fields first." });
-            }
-          });
-        } else {
-          window.console.log("Driver input not found on Netlify Dutchie page.");
-          sendResponse({ 
-            success: false, 
-            error: "Driver input field not found on the page."
-          });
-        }
+        window.console.log("🔍 Looking for input fields...");
+        window.console.log("📝 Delivered by input found?", deliveredByInput ? "YES" : "NO");
+        window.console.log("🏢 Vendor input found?", vendorInput ? "YES" : "NO");
+        
+        // Debug: Log all input IDs to help identify correct ones
+        window.console.log("📋 All input IDs on page:");
+        document.querySelectorAll('input[id]').forEach(input => {
+          window.console.log("   - " + input.id);
+        });
+        
+        chrome.storage.local.get("savedFields", (data) => {
+          window.console.log("💾 Retrieved saved fields from storage:", data.savedFields);
+          let pastedFields = [];
+          
+          // Paste DRIVERS into "Delivered by" field
+          if (deliveredByInput && data.savedFields && data.savedFields.drivers) {
+            window.console.log("🚗 Pasting drivers value:", data.savedFields.drivers);
+            deliveredByInput.value = data.savedFields.drivers || '';
+            deliveredByInput.dispatchEvent(new Event('input', { bubbles: true }));
+            deliveredByInput.dispatchEvent(new Event('change', { bubbles: true }));
+            pastedFields.push(`Drivers → Delivered by: ${data.savedFields.drivers}`);
+          }
+          
+          // Paste COMPANY into "Vendor" field
+          if (vendorInput && data.savedFields && data.savedFields.company) {
+            window.console.log("🏢 Pasting company value:", data.savedFields.company);
+            vendorInput.value = data.savedFields.company || '';
+            vendorInput.dispatchEvent(new Event('input', { bubbles: true }));
+            vendorInput.dispatchEvent(new Event('change', { bubbles: true }));
+            pastedFields.push(`Company → Vendor: ${data.savedFields.company}`);
+          }
+          
+          if (pastedFields.length > 0) {
+            window.console.log("✅ Successfully pasted fields:");
+            pastedFields.forEach(field => window.console.log("   - " + field));
+            sendResponse({ success: true, message: `Pasted ${pastedFields.length} field(s)` });
+          } else {
+            window.console.log("⚠️ No fields were pasted");
+            window.console.log("   Available data:", data.savedFields ? Object.keys(data.savedFields) : "No saved fields");
+            window.console.log("   Missing inputs or data");
+            sendResponse({ success: false, error: "Could not paste fields. Check console for details." });
+          }
+        });
+        
         return true;
       } else if (isSimulationForm) {
         window.console.log("Detected simulation form page. Checking tab...");
