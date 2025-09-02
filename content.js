@@ -160,7 +160,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         });
       });
       return true;
-    } else if (request.action === "pasteFields") {
+    } else if (request.action === "pasteFields" || request.action === "pasteMainPage" || request.action === "pasteModal" || request.action === "pasteProductSpecific") {
       window.console.log("Paste Fields action triggered at:", new Date().toISOString());
       window.console.log("Current page URL:", window.location.href);
 
@@ -205,15 +205,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
         return true;
       } else if (isNetlifyDutchie) {
-        window.console.log("🎯 Detected Netlify Dutchie page. Attempting to paste multiple fields...");
-        
-        // Get ALL the input elements we need
-        const deliveredByInput = document.getElementById('input-input_Delivered by');
-        const vendorInput = document.getElementById('input-input_Vendor') || document.getElementById('input-Vendor');
-        
-        window.console.log("🔍 Looking for input fields...");
-        window.console.log("📝 Delivered by input found?", deliveredByInput ? "YES" : "NO");
-        window.console.log("🏢 Vendor input found?", vendorInput ? "YES" : "NO");
+        window.console.log("🎯 Detected Netlify Dutchie page. Action:", request.action);
         
         // Debug: Log all input IDs to help identify correct ones
         window.console.log("📋 All input IDs on page:");
@@ -221,39 +213,189 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           window.console.log("   - " + input.id);
         });
         
-        chrome.storage.local.get("savedFields", (data) => {
-          window.console.log("💾 Retrieved saved fields from storage:", data.savedFields);
-          let pastedFields = [];
+        if (request.action === "pasteMainPage" || request.action === "pasteFields") {
+          window.console.log("📄 Pasting Main Page fields...");
           
-          // Paste DRIVERS into "Delivered by" field
-          if (deliveredByInput && data.savedFields && data.savedFields.drivers) {
-            window.console.log("🚗 Pasting drivers value:", data.savedFields.drivers);
-            deliveredByInput.value = data.savedFields.drivers || '';
-            deliveredByInput.dispatchEvent(new Event('input', { bubbles: true }));
-            deliveredByInput.dispatchEvent(new Event('change', { bubbles: true }));
-            pastedFields.push(`Drivers → Delivered by: ${data.savedFields.drivers}`);
-          }
+          // Get main page input elements
+          const deliveredByInput = document.getElementById('input-input_Delivered by');
+          const vendorInput = document.getElementById('input-input_Vendor') || document.getElementById('input-Vendor');
           
-          // Paste COMPANY into "Vendor" field
-          if (vendorInput && data.savedFields && data.savedFields.company) {
-            window.console.log("🏢 Pasting company value:", data.savedFields.company);
-            vendorInput.value = data.savedFields.company || '';
-            vendorInput.dispatchEvent(new Event('input', { bubbles: true }));
-            vendorInput.dispatchEvent(new Event('change', { bubbles: true }));
-            pastedFields.push(`Company → Vendor: ${data.savedFields.company}`);
-          }
+          chrome.storage.local.get("savedFields", (data) => {
+            let pastedFields = [];
+            
+            // Paste DRIVERS into "Delivered by" field
+            if (deliveredByInput && data.savedFields && data.savedFields.drivers) {
+              window.console.log("🚗 Pasting drivers value:", data.savedFields.drivers);
+              deliveredByInput.value = data.savedFields.drivers || '';
+              deliveredByInput.dispatchEvent(new Event('input', { bubbles: true }));
+              deliveredByInput.dispatchEvent(new Event('change', { bubbles: true }));
+              pastedFields.push(`Drivers → Delivered by`);
+            }
+            
+            // Paste COMPANY into "Vendor" field
+            if (vendorInput && data.savedFields && data.savedFields.company) {
+              window.console.log("🏢 Pasting company value:", data.savedFields.company);
+              vendorInput.value = data.savedFields.company || '';
+              vendorInput.dispatchEvent(new Event('input', { bubbles: true }));
+              vendorInput.dispatchEvent(new Event('change', { bubbles: true }));
+              pastedFields.push(`Company → Vendor`);
+            }
+            
+            if (pastedFields.length > 0) {
+              sendResponse({ success: true, message: `Main Page: ${pastedFields.join(', ')}` });
+            } else {
+              sendResponse({ success: false, error: "No main page fields could be pasted." });
+            }
+          });
           
-          if (pastedFields.length > 0) {
-            window.console.log("✅ Successfully pasted fields:");
-            pastedFields.forEach(field => window.console.log("   - " + field));
-            sendResponse({ success: true, message: `Pasted ${pastedFields.length} field(s)` });
-          } else {
-            window.console.log("⚠️ No fields were pasted");
-            window.console.log("   Available data:", data.savedFields ? Object.keys(data.savedFields) : "No saved fields");
-            window.console.log("   Missing inputs or data");
-            sendResponse({ success: false, error: "Could not paste fields. Check console for details." });
-          }
-        });
+        } else if (request.action === "pasteModal") {
+          window.console.log("🎭 Pasting Modal fields...");
+          
+          // Get modal input elements
+          const packageNdcInput = document.getElementById('input-input_Package NDC');
+          const packageIdInput = document.getElementById('input-input_Package ID');
+          const expirationDateInput = document.getElementById('input-input_Expiration date');
+          const costPerUnitInput = document.getElementById('input-input_Cost per unit');
+          window.console.log("📦 Package NDC input found?", packageNdcInput ? "YES" : "NO");
+          window.console.log("🆔 Package ID input found?", packageIdInput ? "YES" : "NO");
+          window.console.log("📅 Expiration Date input found?", expirationDateInput ? "YES" : "NO");
+          window.console.log("💰 Cost per Unit input found?", costPerUnitInput ? "YES" : "NO");
+          
+          chrome.storage.local.get("savedFields", (data) => {
+            let pastedFields = [];
+            
+            // Paste M NUMBER into "Package NDC" field
+            if (packageNdcInput && data.savedFields && data.savedFields.mNumber) {
+              window.console.log("🏷️ Pasting mNumber value:", data.savedFields.mNumber);
+              packageNdcInput.value = data.savedFields.mNumber || '';
+              packageNdcInput.dispatchEvent(new Event('input', { bubbles: true }));
+              packageNdcInput.dispatchEvent(new Event('change', { bubbles: true }));
+              pastedFields.push(`M Number → Package NDC`);
+              window.console.log("✅ Successfully pasted mNumber into Package NDC field");
+            } else if (!packageNdcInput) {
+              window.console.log("❌ Package NDC input not found");
+            } else if (!data.savedFields?.mNumber) {
+              window.console.log("⚠️ No mNumber field in saved data");
+            }
+            
+            // Paste PACKAGE ID into "Package ID" field
+            if (packageIdInput && data.savedFields && data.savedFields.packageId) {
+              window.console.log("📦 Pasting packageId value:", data.savedFields.packageId);
+              packageIdInput.value = data.savedFields.packageId || '';
+              packageIdInput.dispatchEvent(new Event('input', { bubbles: true }));
+              packageIdInput.dispatchEvent(new Event('change', { bubbles: true }));
+              pastedFields.push(`Package ID → Package ID`);
+              window.console.log("✅ Successfully pasted packageId into Package ID field");
+            } else if (!packageIdInput) {
+              window.console.log("❌ Package ID input not found");
+            } else if (!data.savedFields?.packageId) {
+              window.console.log("⚠️ No packageId field in saved data");
+            }
+            
+            // Paste EXPIRATION DATE into "Expiration date" field
+            if (expirationDateInput && data.savedFields && data.savedFields.expirationDate) {
+              window.console.log("📅 Pasting expirationDate value:", data.savedFields.expirationDate);
+              expirationDateInput.value = data.savedFields.expirationDate || '';
+              expirationDateInput.dispatchEvent(new Event('input', { bubbles: true }));
+              expirationDateInput.dispatchEvent(new Event('change', { bubbles: true }));
+              pastedFields.push(`Expiration Date → Expiration date`);
+              window.console.log("✅ Successfully pasted expirationDate into Expiration date field");
+            } else if (!expirationDateInput) {
+              window.console.log("❌ Expiration Date input not found");
+            } else if (!data.savedFields?.expirationDate) {
+              window.console.log("⚠️ No expirationDate field in saved data");
+            }
+            
+            // Paste COST into "Cost per unit" field
+            if (costPerUnitInput && data.savedFields && data.savedFields.cost) {
+              window.console.log("💰 Pasting cost value:", data.savedFields.cost);
+              costPerUnitInput.value = data.savedFields.cost || '';
+              costPerUnitInput.dispatchEvent(new Event('input', { bubbles: true }));
+              costPerUnitInput.dispatchEvent(new Event('change', { bubbles: true }));
+              pastedFields.push(`Cost → Cost per unit`);
+              window.console.log("✅ Successfully pasted cost into Cost per unit field");
+            } else if (!costPerUnitInput) {
+              window.console.log("❌ Cost per unit input not found");
+            } else if (!data.savedFields?.cost) {
+              window.console.log("⚠️ No cost field in saved data");
+            }
+            
+            if (pastedFields.length > 0) {
+              sendResponse({ success: true, message: `Modal: ${pastedFields.join(', ')}` });
+            } else {
+              sendResponse({ success: false, error: "No modal fields could be pasted." });
+            }
+          });
+          
+        } else if (request.action === "pasteProductSpecific") {
+          window.console.log("🛍️ Pasting Product Specific fields...");
+          
+          // Get product specific input elements
+          const nameInput = document.getElementById('input-input_Name:');
+          const skuInput = document.getElementById('input-input_SKU:');
+          const ndcInput = document.getElementById('input-input_NDC:');
+          window.console.log("📝 Name input found?", nameInput ? "YES" : "NO");
+          window.console.log("🏷️ SKU input found?", skuInput ? "YES" : "NO");
+          window.console.log("🔢 NDC input found?", ndcInput ? "YES" : "NO");
+          
+          chrome.storage.local.get("savedFields", (data) => {
+            let pastedFields = [];
+            
+            // Create formatted Name: {{Company}} | {{Type}} | {{Weight}} | {{THC}} | {{Strain}}
+            if (nameInput && data.savedFields) {
+              const company = data.savedFields.company || '';
+              const type = data.savedFields.type || '';
+              const weight = data.savedFields.weight || '';
+              const thc = data.savedFields.thc || '';
+              const strain = data.savedFields.strain || '';
+              
+              const formattedName = `${company} | ${type} | ${weight} | ${thc} | ${strain}`;
+              window.console.log("📝 Creating formatted name:", formattedName);
+              
+              nameInput.value = formattedName;
+              nameInput.dispatchEvent(new Event('input', { bubbles: true }));
+              nameInput.dispatchEvent(new Event('change', { bubbles: true }));
+              pastedFields.push(`Formatted Name`);
+              window.console.log("✅ Successfully pasted formatted name");
+            } else if (!nameInput) {
+              window.console.log("❌ Name input not found");
+            }
+            
+            // Paste M NUMBER into SKU field
+            if (skuInput && data.savedFields && data.savedFields.mNumber) {
+              window.console.log("🏷️ Pasting mNumber into SKU:", data.savedFields.mNumber);
+              skuInput.value = data.savedFields.mNumber || '';
+              skuInput.dispatchEvent(new Event('input', { bubbles: true }));
+              skuInput.dispatchEvent(new Event('change', { bubbles: true }));
+              pastedFields.push(`M Number → SKU`);
+              window.console.log("✅ Successfully pasted mNumber into SKU field");
+            } else if (!skuInput) {
+              window.console.log("❌ SKU input not found");
+            } else if (!data.savedFields?.mNumber) {
+              window.console.log("⚠️ No mNumber field in saved data");
+            }
+            
+            // Paste M NUMBER into NDC field
+            if (ndcInput && data.savedFields && data.savedFields.mNumber) {
+              window.console.log("🔢 Pasting mNumber into NDC:", data.savedFields.mNumber);
+              ndcInput.value = data.savedFields.mNumber || '';
+              ndcInput.dispatchEvent(new Event('input', { bubbles: true }));
+              ndcInput.dispatchEvent(new Event('change', { bubbles: true }));
+              pastedFields.push(`M Number → NDC`);
+              window.console.log("✅ Successfully pasted mNumber into NDC field");
+            } else if (!ndcInput) {
+              window.console.log("❌ NDC input not found");
+            } else if (!data.savedFields?.mNumber) {
+              window.console.log("⚠️ No mNumber field in saved data");
+            }
+            
+            if (pastedFields.length > 0) {
+              sendResponse({ success: true, message: `Product Specific: ${pastedFields.join(', ')}` });
+            } else {
+              sendResponse({ success: false, error: "No product specific fields could be pasted." });
+            }
+          });
+        }
         
         return true;
       } else if (isSimulationForm) {
