@@ -169,7 +169,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       const isDutchieInventory = window.location.href === 'https://pine.backoffice.dutchie.com/products/inventory';
       const isTestHtml = window.location.href.toLowerCase().includes('test.html');
       const isNetlifyDutchie = window.location.href.includes('morganhondros-interviewtopics.netlify.app/dutchie-new') || 
-                              window.location.href.includes('localhost:3001/dutchie-new');
+                              window.location.href.includes('localhost:3001/dutchie-new') ||
+                              window.location.href.includes('localhost:3000/dutchie-new');
       window.console.log("Checking page type - isTestHtml:", isTestHtml, "URL:", window.location.href.toLowerCase());
       window.console.log("Checking page type - isSimulationForm:", isSimulationForm, "URL:", window.location.href);
       window.console.log("Checking page type - isDutchie:", isDutchie, "URL:", window.location.href);
@@ -329,16 +330,54 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           
         } else if (request.action === "pasteProductSpecific") {
           window.console.log("🛍️ Pasting Product Specific fields...");
+          window.console.log("📍 Current URL:", window.location.href);
           
           // Get product specific input elements
           const nameInput = document.getElementById('input-input_Name:');
           const skuInput = document.getElementById('input-input_SKU:');
           const ndcInput = document.getElementById('input-input_NDC:');
+          const daysSupplyInput = document.getElementById('input-input_Days supply:');
+          const thcContentInput = document.getElementById('input-input_THC content:');
+          const cbdContentInput = document.getElementById('input-input_CBD content:');
+          const gramsConcentrationInput = document.getElementById('input-input_Grams / concentration:');
+          const netWeightInput = document.getElementById('input-input_Net weight:');
+          const grossWeightInput = document.getElementById('input-input_Gross weight:');
+          const masterCategoryInput = document.getElementById('input-input_Master category:');
+          const categoryInput = document.getElementById('input-input_catalog-tags');
+          const strainInput = document.getElementById('input-input_Strain:');
+          const brandInput = document.getElementById('input-input_Brand:');
+          const vendorInput = document.getElementById('input-input_Vendor:');
+          const basePriceInput = document.getElementById('input-input_Base price:');
+          const costInput = document.getElementById('input-input_Cost:');
+          
           window.console.log("📝 Name input found?", nameInput ? "YES" : "NO");
           window.console.log("🏷️ SKU input found?", skuInput ? "YES" : "NO");
           window.console.log("🔢 NDC input found?", ndcInput ? "YES" : "NO");
+          window.console.log("📅 Days supply input found?", daysSupplyInput ? "YES" : "NO");
+          window.console.log("🌿 THC content input found?", thcContentInput ? "YES" : "NO");
+          window.console.log("🌱 CBD content input found?", cbdContentInput ? "YES" : "NO");
+          window.console.log("⚖️ Grams/concentration input found?", gramsConcentrationInput ? "YES" : "NO");
+          window.console.log("📏 Net weight input found?", netWeightInput ? "YES" : "NO");
+          window.console.log("⚖️ Gross weight input found?", grossWeightInput ? "YES" : "NO");
+          window.console.log("🗂️ Master category input found?", masterCategoryInput ? "YES" : "NO");
+          window.console.log("🏷️ Category input found?", categoryInput ? "YES" : "NO");
+          window.console.log("🌾 Strain input found?", strainInput ? "YES" : "NO");
+          window.console.log("🏢 Brand input found?", brandInput ? "YES" : "NO");
+          window.console.log("🏪 Vendor input found?", vendorInput ? "YES" : "NO");
+          window.console.log("💰 Base price input found?", basePriceInput ? "YES" : "NO");
+          window.console.log("💵 Cost input found?", costInput ? "YES" : "NO");
           
           chrome.storage.local.get("savedFields", (data) => {
+            window.console.log("📦 DEBUG - Retrieved data from storage:", data.savedFields);
+            if (data.savedFields) {
+              window.console.log("   Available fields:", Object.keys(data.savedFields));
+              window.console.log("   Weight value:", data.savedFields.weight);
+              window.console.log("   Company value:", data.savedFields.company);
+              window.console.log("   Type value:", data.savedFields.type);
+            } else {
+              window.console.log("❌ No saved fields found in storage!");
+            }
+            
             let pastedFields = [];
             
             // Create formatted Name: {{Company}} | {{Type}} | {{Weight}} | {{THC}} | {{Strain}}
@@ -387,6 +426,135 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
               window.console.log("❌ NDC input not found");
             } else if (!data.savedFields?.mNumber) {
               window.console.log("⚠️ No mNumber field in saved data");
+            }
+            
+            // Paste DAYS SUPPLY into "Days supply" field
+            if (daysSupplyInput && data.savedFields && data.savedFields.daysSupply) {
+              daysSupplyInput.value = data.savedFields.daysSupply || '';
+              daysSupplyInput.dispatchEvent(new Event('input', { bubbles: true }));
+              daysSupplyInput.dispatchEvent(new Event('change', { bubbles: true }));
+              pastedFields.push(`Days Supply`);
+              window.console.log("✅ Successfully pasted daysSupply");
+            }
+            
+            // Paste THC into "THC content" field
+            if (thcContentInput && data.savedFields && data.savedFields.thc) {
+              thcContentInput.value = data.savedFields.thc || '';
+              thcContentInput.dispatchEvent(new Event('input', { bubbles: true }));
+              thcContentInput.dispatchEvent(new Event('change', { bubbles: true }));
+              pastedFields.push(`THC Content`);
+              window.console.log("✅ Successfully pasted THC");
+            }
+            
+            // Paste CBD into "CBD content" field
+            if (cbdContentInput && data.savedFields && data.savedFields.cbd) {
+              cbdContentInput.value = data.savedFields.cbd || '';
+              cbdContentInput.dispatchEvent(new Event('input', { bubbles: true }));
+              cbdContentInput.dispatchEvent(new Event('change', { bubbles: true }));
+              pastedFields.push(`CBD Content`);
+              window.console.log("✅ Successfully pasted CBD");
+            }
+            
+            // Paste WEIGHT into "Grams / concentration" field
+            if (gramsConcentrationInput) {
+              window.console.log("🔍 Grams/concentration input exists, weight data:", data.savedFields?.weight);
+              if (data.savedFields && data.savedFields.weight) {
+                window.console.log("📊 Pasting weight '", data.savedFields.weight, "' into Grams/concentration");
+                gramsConcentrationInput.value = data.savedFields.weight || '';
+                gramsConcentrationInput.dispatchEvent(new Event('input', { bubbles: true }));
+                gramsConcentrationInput.dispatchEvent(new Event('change', { bubbles: true }));
+                pastedFields.push(`Grams/Concentration`);
+                window.console.log("✅ Successfully pasted weight into Grams/concentration, new value:", gramsConcentrationInput.value);
+              } else {
+                window.console.log("⚠️ No weight data found for Grams/concentration");
+              }
+            } else {
+              window.console.log("❌ Grams/concentration input not found with ID 'input-input_Grams / concentration:'");
+            }
+            
+            // Paste WEIGHT into "Net weight" field
+            if (netWeightInput && data.savedFields && data.savedFields.weight) {
+              netWeightInput.value = data.savedFields.weight || '';
+              netWeightInput.dispatchEvent(new Event('input', { bubbles: true }));
+              netWeightInput.dispatchEvent(new Event('change', { bubbles: true }));
+              pastedFields.push(`Net Weight`);
+              window.console.log("✅ Successfully pasted weight into Net weight");
+            }
+            
+            // Paste WEIGHT into "Gross weight" field
+            if (grossWeightInput && data.savedFields && data.savedFields.weight) {
+              grossWeightInput.value = data.savedFields.weight || '';
+              grossWeightInput.dispatchEvent(new Event('input', { bubbles: true }));
+              grossWeightInput.dispatchEvent(new Event('change', { bubbles: true }));
+              pastedFields.push(`Gross Weight`);
+              window.console.log("✅ Successfully pasted weight into Gross weight");
+            }
+            
+            // Paste TYPE into "Master category" field
+            if (masterCategoryInput && data.savedFields && data.savedFields.type) {
+              masterCategoryInput.value = data.savedFields.type || '';
+              masterCategoryInput.dispatchEvent(new Event('input', { bubbles: true }));
+              masterCategoryInput.dispatchEvent(new Event('change', { bubbles: true }));
+              pastedFields.push(`Master Category`);
+              window.console.log("✅ Successfully pasted type into Master category");
+            }
+            
+            // Paste TYPE into "Category" field (dropdown converted to editable input)
+            if (categoryInput && data.savedFields && data.savedFields.type) {
+              categoryInput.value = data.savedFields.type || '';
+              categoryInput.dispatchEvent(new Event('input', { bubbles: true }));
+              categoryInput.dispatchEvent(new Event('change', { bubbles: true }));
+              pastedFields.push(`Category`);
+              window.console.log("✅ Successfully pasted type into Category");
+            }
+            
+            // Paste STRAIN into "Strain" field
+            if (strainInput && data.savedFields && data.savedFields.strain) {
+              strainInput.value = data.savedFields.strain || '';
+              strainInput.dispatchEvent(new Event('input', { bubbles: true }));
+              strainInput.dispatchEvent(new Event('change', { bubbles: true }));
+              pastedFields.push(`Strain`);
+              window.console.log("✅ Successfully pasted strain");
+            }
+            
+            // Paste COMPANY into "Brand" field
+            if (brandInput && data.savedFields && data.savedFields.company) {
+              brandInput.value = data.savedFields.company || '';
+              brandInput.dispatchEvent(new Event('input', { bubbles: true }));
+              brandInput.dispatchEvent(new Event('change', { bubbles: true }));
+              pastedFields.push(`Brand`);
+              window.console.log("✅ Successfully pasted company into Brand");
+            }
+            
+            // Paste COMPANY into "Vendor" field
+            if (vendorInput && data.savedFields && data.savedFields.company) {
+              vendorInput.value = data.savedFields.company || '';
+              vendorInput.dispatchEvent(new Event('input', { bubbles: true }));
+              vendorInput.dispatchEvent(new Event('change', { bubbles: true }));
+              pastedFields.push(`Vendor`);
+              window.console.log("✅ Successfully pasted company into Vendor");
+            }
+            
+            // Paste COST × 2 into "Base price" field
+            if (basePriceInput && data.savedFields && data.savedFields.cost) {
+              const costValue = parseFloat(data.savedFields.cost) || 0;
+              const basePriceValue = costValue * 2;
+              window.console.log("💰 Calculating base price: ", data.savedFields.cost, "× 2 =", basePriceValue);
+              basePriceInput.value = basePriceValue.toString();
+              basePriceInput.dispatchEvent(new Event('input', { bubbles: true }));
+              basePriceInput.dispatchEvent(new Event('change', { bubbles: true }));
+              pastedFields.push(`Base Price`);
+              window.console.log("✅ Successfully pasted cost × 2 into Base price:", basePriceValue);
+            }
+            
+            // Paste COST into "Cost" field
+            if (costInput && data.savedFields && data.savedFields.cost) {
+              window.console.log("💵 Pasting regular cost:", data.savedFields.cost);
+              costInput.value = data.savedFields.cost || '';
+              costInput.dispatchEvent(new Event('input', { bubbles: true }));
+              costInput.dispatchEvent(new Event('change', { bubbles: true }));
+              pastedFields.push(`Cost`);
+              window.console.log("✅ Successfully pasted cost into Cost field");
             }
             
             if (pastedFields.length > 0) {
